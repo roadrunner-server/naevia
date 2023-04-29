@@ -4,6 +4,10 @@ version = "0.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
-
+protobuf = "3"
+yew = {version = "0.20.0", features = ["csr"]}
+serde_json = "1"
+serde = "1"
+bincode = "1"
+goridge-rs = { git = "https://github.com/roadrunner-server/goridge-rs" }

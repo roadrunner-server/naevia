@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package = "tests/proto";
+
+
+message InMsg {
+	string payload = 1;
+}
+
+message OutMsg {
+	string payload = 1;
+}

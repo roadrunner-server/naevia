@@ -1,0 +1,7 @@
+version: v1
+
+plugins:
+  - name: go
+    opt:
+      - paths=source_relative
+    out: build
