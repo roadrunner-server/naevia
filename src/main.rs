@@ -1,5 +1,6 @@
 mod generated;
 pub mod rpc;
+
 use yew::prelude::*;
 
 #[function_component]

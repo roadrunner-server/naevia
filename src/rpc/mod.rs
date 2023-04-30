@@ -13,10 +13,8 @@ pub enum Method {
 impl std::fmt::Display for Method {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Self::Config => f.write_str(methods::CONFIG_RPC),
             Self::Version => f.write_str(methods::VERSION_RPC),
-            _ => {
-                panic!("not correct")
-            }
         }
     }
 }
@@ -27,8 +25,8 @@ impl Into<Vec<u8>> for Method {
             Self::Version => {
                 return Vec::from(methods::VERSION_RPC);
             }
-            _ => {
-                panic!("unknown");
+            Self::Config => {
+                return Vec::from(methods::CONFIG_RPC);
             }
         }
     }
