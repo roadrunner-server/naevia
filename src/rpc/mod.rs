@@ -1,7 +1,6 @@
 use goridge_rs::frame::frame_flags::Flag::CodecProto;
 use goridge_rs::frame::Frame;
 use std::io::{Read, Write};
-use std::net::ToSocketAddrs;
 
 mod methods;
 
@@ -47,7 +46,7 @@ pub struct RPC {
 
 impl RPC {
     pub fn new(addr: &str) -> Result<RPC, std::io::Error> {
-        let mut client = std::net::TcpStream::connect(addr)?;
+        let client = std::net::TcpStream::connect(addr)?;
 
         Ok(RPC { client, seq_id: 1 })
     }
@@ -57,12 +56,18 @@ impl Request for RPC {
     fn send(&mut self, method: Method, payload: &Vec<u8>) -> Result<Vec<u8>, std::io::Error> {
         // init frame + add a version
         let mut frame = Frame::default();
+        let mut mtd = <Method as Into<Vec<u8>>>::into(method);
         frame.write_version(1);
         frame.write_flags(&[CodecProto]);
-        frame.write_options(&[self.seq_id, payload.len() as u32]);
+        frame.write_options(&[self.seq_id, mtd.len() as u32]);
+        if self.seq_id >= u32::MAX {
+            self.seq_id = 1;
+        }
+
         self.seq_id += 1;
 
-        let _ = <Method as Into<Vec<u8>>>::into(method).extend(payload.iter());
+        mtd.extend_from_slice(payload);
+        frame.write_payload(mtd);
         frame.write_crc();
 
         // Send the request payload to the server
@@ -100,11 +105,19 @@ impl Request for RPC {
 }
 
 mod tests {
-    use super::{methods, Request, RPC};
+    #![allow(unused_imports)]
+    use super::RPC;
+    use crate::generated;
+    use crate::rpc::{Request, Method};
 
     #[test]
     fn test() {
+        let mut msg = generated::InMsg::default();
+        msg.payload = String::from("foo from");
+        let m = protobuf::Message::write_to_bytes(&msg).unwrap();
+
         let mut rpc = RPC::new("127.0.0.1:8999").unwrap();
-        let mut aa = rpc.send(super::Method::Version, &vec![]);
+        let resp = rpc.send(Method::Version, &m).unwrap();
+        println!("response: {}", std::str::from_utf8(&resp.to_vec()).unwrap());
     }
 }
